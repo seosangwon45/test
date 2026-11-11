@@ -1,0 +1,55 @@
+name: 속도 개선 배포
+
+# 수동 실행 전용. 저장소 Settings > Secrets and variables > Actions 에
+# FTP_HOST, FTP_USER, FTP_PASSWORD 를 등록해야 한다.
+# 선택: FTP_PROTOCOL(ftp|ftps|sftp), FTP_PORT, FTP_WEBROOT(사이트 루트 경로)
+on:
+  workflow_dispatch:
+    inputs:
+      apply_images:
+        description: 경량화 이미지 교체
+        type: boolean
+        default: true
+      apply_htaccess:
+        description: .htaccess에 압축·캐시 설정 추가
+        type: boolean
+        default: true
+      dry_run:
+        description: 변경 없이 무엇이 바뀔지만 확인
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency: deploy-perf
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: lftp 설치
+        run: sudo apt-get update -q && sudo apt-get install -y -q lftp
+      - name: 배포
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_WEBROOT: ${{ secrets.FTP_WEBROOT }}
+          APPLY_IMAGES: ${{ inputs.apply_images }}
+          APPLY_HTACCESS: ${{ inputs.apply_htaccess }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          WORK_DIR: ${{ runner.temp }}/perf
+        run: mkdir -p "$WORK_DIR" && bash perf/deploy.sh
+      - name: 원본 이미지 백업 보관
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-images-backup
+          path: ${{ runner.temp }}/perf/backup
+          if-no-files-found: ignore
+          retention-days: 90

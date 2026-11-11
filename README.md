@@ -21,6 +21,15 @@
 - `perf/optimized-images/`: 무거운 이미지 49개의 경량화본(19.2MB → 4.7MB). 폴더 구조가 서버 웹루트와 같으므로, 원본을 백업한 뒤 웹루트에 덮어씁니다.
 - `perf/htaccess-snippet.txt`: gzip 압축과 정적 파일 캐시 30일. 웹루트 `.htaccess`에 추가합니다 (`mod_deflate`, `mod_expires` 필요).
 
+### 자동 배포 (권장)
+
+1단계를 손으로 올리는 대신 GitHub Actions로 한 번에 적용할 수 있습니다.
+
+1. 저장소 Settings → Secrets and variables → Actions 에 `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` 등록. 필요하면 `FTP_PROTOCOL`(`ftp`·`ftps`·`sftp`, 기본 `ftp`), `FTP_PORT`, `FTP_WEBROOT`(사이트 루트 경로, 예: `www`)도 등록
+2. Actions 탭 → "속도 개선 배포" → Run workflow
+
+동작: 웹루트가 맞는지 확인 → 원본 이미지를 내려받아 백업(실행 결과의 `original-images-backup`, 90일 보관) → 서버 파일이 더 클 때만 교체 → `.htaccess` 원본을 서버에 `.htaccess.bak-perf-날짜`로 남기고 설정 추가 → 사이트 응답이 200이 아니면 `.htaccess`를 자동으로 되돌림. 여러 번 실행해도 안전합니다. `dry_run`을 켜면 변경 없이 바뀔 내용만 보여 줍니다.
+
 ### 2단계 — 테마 소스 수정 (소스가 올라와야 가능)
 
 아래 파일을 서버와 같은 경로로 이 저장소에 올리면 브랜치에서 수정합니다.
