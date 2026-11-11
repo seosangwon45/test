@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # 경량화 이미지와 .htaccess 설정을 서버에 올린다. GitHub Actions에서 실행한다.
 # 필요한 환경변수: FTP_HOST FTP_USER LFTP_PASSWORD
-# 선택: FTP_PROTOCOL(ftp|ftps|sftp, 기본 ftp) FTP_PORT FTP_WEBROOT(기본 .) SITE_URL
+# 선택: FTP_PROTOCOL FTP_PORT FTP_WEBROOT(기본 .) SITE_URL
+#   FTP_PROTOCOL=ftps(기본): FTP 위에서 TLS를 강제하고 서버 인증서를 검증한다.
+#   FTP_PROTOCOL=sftp: SFTP_KNOWN_HOSTS(서버 호스트 키, known_hosts 형식 한 줄)가 있어야 한다.
+#   FTP_PROTOCOL=ftp-plain: 암호화 없는 FTP. 비밀번호가 평문으로 전송되므로 다른 방법이 없을 때만 쓴다.
 #       APPLY_IMAGES(기본 true) APPLY_HTACCESS(기본 false) DRY_RUN(기본 false)
 set -euo pipefail
 
@@ -9,7 +12,7 @@ set -euo pipefail
 : "${FTP_USER:?FTP_USER 시크릿이 없습니다}"
 : "${LFTP_PASSWORD:?FTP_PASSWORD 시크릿이 없습니다}"
 export LFTP_PASSWORD
-PROTO="${FTP_PROTOCOL:-ftp}"; [ -n "$PROTO" ] || PROTO=ftp
+PROTO="${FTP_PROTOCOL:-ftps}"; [ -n "$PROTO" ] || PROTO=ftps
 WEBROOT="${FTP_WEBROOT:-.}"; [ -n "$WEBROOT" ] || WEBROOT=.
 SITE_URL="${SITE_URL:-https://moducopy.co.kr}"
 APPLY_IMAGES="${APPLY_IMAGES:-true}"; APPLY_HTACCESS="${APPLY_HTACCESS:-false}"; DRY_RUN="${DRY_RUN:-false}"
@@ -19,16 +22,35 @@ WORK="${WORK_DIR:-$(mktemp -d)}"; BACKUP="$WORK/backup"; mkdir -p "$BACKUP"
 STAMP="$(date -u +%Y%m%d-%H%M%S)"
 SENTINEL="theme/eb4_basic/skin/item/book/img/item_info_01.jpg"
 
-case "$PROTO" in ftp|ftps|sftp) ;; *) echo "FTP_PROTOCOL은 ftp, ftps, sftp 중 하나여야 합니다"; exit 1;; esac
-URL="$PROTO://$FTP_HOST"; [ -n "${FTP_PORT:-}" ] && URL="$URL:$FTP_PORT"
+case "$PROTO" in
+  ftps)
+    SCHEME=ftp
+    CONN="set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ftp:ssl-protect-list yes; set ssl:verify-certificate yes; set ssl:check-hostname yes" ;;
+  sftp)
+    SCHEME=sftp
+    : "${SFTP_KNOWN_HOSTS:?FTP_PROTOCOL=sftp 이면 SFTP_KNOWN_HOSTS 시크릿(서버 호스트 키)이 필요합니다}"
+    KH="$WORK/known_hosts"; printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$KH"
+    CONN="set sftp:auto-confirm no; set sftp:connect-program \"ssh -a -x -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$KH\"" ;;
+  ftp-plain)
+    SCHEME=ftp
+    echo "경고: 암호화 없는 FTP입니다. 비밀번호와 파일이 평문으로 전송됩니다."
+    CONN="set ftp:ssl-allow no" ;;
+  *) echo "FTP_PROTOCOL은 ftps, sftp, ftp-plain 중 하나여야 합니다"; exit 1 ;;
+esac
+URL="$SCHEME://$FTP_HOST"; [ -n "${FTP_PORT:-}" ] && URL="$URL:$FTP_PORT"
 
 run_lftp() {
-  lftp --env-password -u "$FTP_USER" "$URL" -e "set cmd:fail-exit yes; set net:max-retries 2; set net:timeout 30; set ftp:ssl-allow $([ "$PROTO" = ftp ] && echo no || echo yes); set sftp:auto-confirm yes; set xfer:clobber on; cd \"$WEBROOT\"; $1; bye"
+  lftp --env-password -u "$FTP_USER" "$URL" -e "set cmd:fail-exit yes; set net:max-retries 2; set net:timeout 30; $CONN; set xfer:clobber on; cd \"$WEBROOT\"; $1; bye"
 }
 
 site_code() { curl -s -o /dev/null -w '%{http_code}' -A 'Mozilla/5.0' --max-time 30 "$SITE_URL/" || true; }
 
-echo "== 1. 웹루트 확인"
+echo "== 1. 접속 및 웹루트 확인 ($PROTO)"
+if ! err=$(lftp --env-password -u "$FTP_USER" "$URL" -e "set cmd:fail-exit yes; set net:max-retries 2; set net:timeout 30; $CONN; cls -1; bye" 2>&1 >/dev/null); then
+  echo "서버 접속에 실패했습니다. 아무것도 변경하지 않았습니다."
+  echo "$err" | tail -3
+  exit 1
+fi
 if ! run_lftp "cls -1 \"$SENTINEL\"" >/dev/null 2>&1; then
   echo "웹루트($WEBROOT)에서 $SENTINEL 을 찾지 못했습니다. FTP_WEBROOT 시크릿을 사이트 루트 경로로 지정하세요. 아무것도 변경하지 않았습니다."
   exit 1

@@ -2,7 +2,8 @@ name: 속도 개선 배포
 
 # 수동 실행 전용. 저장소 Settings > Secrets and variables > Actions 에
 # FTP_HOST, FTP_USER, FTP_PASSWORD 를 등록해야 한다.
-# 선택: FTP_PROTOCOL(ftp|ftps|sftp), FTP_PORT, FTP_WEBROOT(사이트 루트 경로)
+# 선택: FTP_PROTOCOL(ftps 기본 | sftp | ftp-plain), FTP_PORT, FTP_WEBROOT(사이트 루트 경로)
+# sftp를 쓰면 SFTP_KNOWN_HOSTS(서버 호스트 키)도 등록한다.
 on:
   workflow_dispatch:
     inputs:
@@ -39,6 +40,7 @@ jobs:
           LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
           FTP_WEBROOT: ${{ secrets.FTP_WEBROOT }}
           APPLY_IMAGES: ${{ inputs.apply_images }}
           APPLY_HTACCESS: ${{ inputs.apply_htaccess }}

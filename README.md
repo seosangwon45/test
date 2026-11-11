@@ -25,7 +25,8 @@
 
 1단계를 손으로 올리는 대신 GitHub Actions로 한 번에 적용할 수 있습니다.
 
-1. 저장소 Settings → Secrets and variables → Actions 에 `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` 등록. 필요하면 `FTP_PROTOCOL`(`ftp`·`ftps`·`sftp`, 기본 `ftp`), `FTP_PORT`, `FTP_WEBROOT`(사이트 루트 경로, 예: `www`)도 등록
+1. 저장소 Settings → Secrets and variables → Actions 에 `FTP_HOST`, `FTP_USER`, `FTP_PASSWORD` 등록. 필요하면 `FTP_PORT`, `FTP_WEBROOT`(사이트 루트 경로, 예: `www`)도 등록
+   - 접속 방식 `FTP_PROTOCOL`: 기본은 `ftps`(TLS 강제, 인증서 검증). `sftp`를 쓰면 `SFTP_KNOWN_HOSTS`(서버 호스트 키, `ssh-keyscan 호스트` 결과 한 줄)도 등록. 호스팅이 암호화를 지원하지 않을 때만 `ftp-plain`(비밀번호 평문 전송)
 2. Actions 탭 → "속도 개선 배포" → Run workflow
 
 동작: 웹루트가 맞는지 확인 → 원본 이미지를 내려받아 백업(실행 결과의 `original-images-backup`, 90일 보관) → 서버 파일이 더 클 때만 교체 → `.htaccess` 원본을 서버에 `.htaccess.bak-perf-날짜`로 남기고 설정 추가 → 사이트 응답이 200이 아니면 `.htaccess`를 자동으로 되돌림. 여러 번 실행해도 안전합니다. `dry_run`을 켜면 변경 없이 바뀔 내용만 보여 줍니다.
