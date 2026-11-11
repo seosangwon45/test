@@ -1,0 +1,8 @@
+# 사이트 소스를 올릴 때 절대 커밋하면 안 되는 것
+/data/
+dbconfig.php
+*.sql
+*.sql.gz
+.env
+*.log
+/perf/original-backup/
