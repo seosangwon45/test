@@ -1,0 +1,17 @@
+# moducopy.co.kr 웹루트 .htaccess 에 추가 (Apache)
+# 1) 텍스트 리소스 gzip 압축 — 현재 JS/CSS가 무압축 전송됨 (AXJ.all.js 1.9MB 등)
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/x-javascript application/json image/svg+xml
+</IfModule>
+
+# 2) 정적 파일 브라우저 캐시 — 현재 1일(max-age=86400)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/png  "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType text/css   "access plus 30 days"
+  ExpiresByType application/javascript "access plus 30 days"
+  ExpiresByType text/javascript "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
