@@ -15,6 +15,10 @@ on:
         description: .htaccess에 압축·캐시 설정 추가
         type: boolean
         default: true
+      create_htaccess:
+        description: 서버에 .htaccess가 없는 것이 확실할 때만 켬 (새로 만듦)
+        type: boolean
+        default: false
       dry_run:
         description: 변경 없이 무엇이 바뀔지만 확인
         type: boolean
@@ -44,6 +48,7 @@ jobs:
           FTP_WEBROOT: ${{ secrets.FTP_WEBROOT }}
           APPLY_IMAGES: ${{ inputs.apply_images }}
           APPLY_HTACCESS: ${{ inputs.apply_htaccess }}
+          CREATE_HTACCESS: ${{ inputs.create_htaccess }}
           DRY_RUN: ${{ inputs.dry_run }}
           WORK_DIR: ${{ runner.temp }}/perf
         run: mkdir -p "$WORK_DIR" && bash perf/deploy.sh
