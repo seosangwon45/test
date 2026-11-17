@@ -63,7 +63,7 @@ const stateIs = (page, s, timeout = 60000) => page.waitForFunction(v => document
 async function analyze(page, source) {
   return page.evaluate(async src => {
     const lib = await import('./vendor/pdfjs/pdf.min.js?v=20261117a');
-    const data = src.url ? await (await fetch(src.url)).arrayBuffer() : Uint8Array.from(atob(src.b64), c => c.charCodeAt(0)).buffer;
+    const data = Uint8Array.from(atob(src.b64), c => c.charCodeAt(0)).buffer;   // CSP(connect-src 'self') 때문에 blob: 을 fetch 하지 않고 받은 파일을 넘긴다
     const size = data.byteLength;
     const doc = await lib.getDocument({ data, verbosity: 0, cMapUrl: 'vendor/pdfjs/cmaps/', cMapPacked: true, standardFontDataUrl: 'vendor/pdfjs/standard_fonts/' }).promise, pages = [];
     for (let n = 1; n <= doc.numPages; n++) {
@@ -91,7 +91,12 @@ async function run(page, job, name, buffer, setup) {
   await stateIs(page, 'done');
   const link = await page.evaluate(() => ({ href: document.getElementById('dl').href, name: document.getElementById('dl').download, sub: document.getElementById('dn-sub').textContent,
     meta: document.getElementById('dn-meta').textContent, thumbs: document.querySelectorAll('#result canvas').length }));
-  const out = await analyze(page, { url: link.href, png: true });
+  const [download] = await Promise.all([page.waitForEvent('download'), page.click('#dl')]);   // 손님과 같은 방법으로 받는다
+  const saved = path.join(OUT, '_last.pdf'); await download.saveAs(saved);
+  const bytes = fs.readFileSync(saved);
+  assert(download.suggestedFilename() === link.name, `받은 파일명 ${download.suggestedFilename()} ≠ ${link.name}`);
+  const out = await analyze(page, { b64: bytes.toString('base64'), png: true });
+  out.bytes = bytes;
   const src = await analyze(page, { b64: buffer.toString('base64') });
   return { summary, note, link, out, src };
 }
@@ -180,7 +185,7 @@ const CASES = [
     assert(r.out.pages[0].items.some(i => i.s.includes('FIELDVALUE')), '양식 값이 결과에 없음'); return 'FIELDVALUE 확인'; });
   await check('옵션', '결과에 원본 첨부 없음', async () => {
     const r = await run(page, 'nup2', '첨부.pdf', fixtures.a4p8);
-    const text = await page.evaluate(async url => new TextDecoder('latin1').decode(await (await fetch(url)).arrayBuffer()), r.link.href);
+    const text = r.out.bytes.toString('latin1');
     assert(!/EmbeddedFiles|\/Filespec|\/EF\b/.test(text), '결과에 첨부 구조가 있음'); return `결과 ${r.out.size}B, 첨부 구조 없음`; });
   await check('옵션', '화면에서 모드·개수 전환 시 주소와 제목이 따라감', async () => {
     await page.goto(base); await upload(page, 'a.pdf', fixtures.a4p8); await stateIs(page, 'chosen');
@@ -236,13 +241,13 @@ const CASES = [
   await check('완료 화면', '받기 링크가 35초 뒤에도 살아 있고 다시 받을 수 있음', async () => {
     const r = await run(page, 'nup2', '유지.pdf', fixtures.a4p5);
     await page.waitForTimeout(35000);
-    const again = await page.evaluate(async () => { const a = document.getElementById('dl'); return [(await (await fetch(a.href)).arrayBuffer()).byteLength, a.download]; });
-    assert(again[0] === r.out.size && again[1] === '유지_2쪽모아찍기.pdf', JSON.stringify(again));
+    const again = await page.evaluate(href => { const a = document.getElementById('dl'); return [a.href === href, a.download]; }, r.link.href);
+    assert(again[0] && again[1] === '유지_2쪽모아찍기.pdf', JSON.stringify(again));
     const [d1] = await Promise.all([page.waitForEvent('download'), page.click('#dl')]);
     const [d2] = await Promise.all([page.waitForEvent('download'), page.click('#dl')]);
     assert(d1.suggestedFilename() === '유지_2쪽모아찍기.pdf' && d2.suggestedFilename() === d1.suggestedFilename(), d1.suggestedFilename());
     const saved = path.join(OUT, 'download-check.pdf'); await d2.saveAs(saved); assert(fs.statSync(saved).size === r.out.size, '받은 파일 크기 불일치');
-    return `35초 뒤 ${again[0]}B 그대로 · 두 번 받기 성공 (${d1.suggestedFilename()})`; });
+    return `35초 뒤에도 링크 유지 · 두 번 받기 성공 (${d1.suggestedFilename()}, ${r.out.size}B)`; });
   await check('완료 화면', '주문 링크·헤더 링크', async () => {
     const t = await page.evaluate(() => { const a = s => { const e = document.querySelector(s); return [e.getAttribute('href'), e.target, e.rel]; };
       return { print: a('#order-print'), book: a('#order-book'), tabs: [...document.querySelectorAll('.tabs a')].map(e => e.getAttribute('href')), logo: document.querySelector('.hd-logo').getAttribute('href'),
@@ -257,8 +262,8 @@ const CASES = [
     assert(t[0] === '유지_4쪽모아찍기.pdf' && t[1].includes('A4 2면'), JSON.stringify(t)); return t.join(' · '); });
   await check('완료 화면', '다른 파일로 시작 → 빈 화면, 이전 결과 링크 해제', async () => {
     const old = await page.getAttribute('#dl', 'href'); await page.click('#restart'); await stateIs(page, 'empty');
-    const t = await page.evaluate(async url => { let alive = true; try { await fetch(url); } catch { alive = false; } return [alive, document.getElementById('dl').getAttribute('href')]; }, old);
-    assert(t[0] === false && t[1] === '#', JSON.stringify(t)); return '이전 결과 해제됨'; });
+    const t = await page.evaluate(() => [document.getElementById('dl').getAttribute('href'), document.getElementById('dl').hasAttribute('download'), document.querySelectorAll('#result canvas').length]);
+    assert(old.startsWith('blob:') && t[0] === '#' && t[1] === false && t[2] === 0, JSON.stringify(t)); return '받기 링크·결과 그림 비워짐'; });
   await check('완료 화면', '처리 중 취소 → 옵션 화면으로', async () => {
     await page.goto(`${base}?job=nup2`); await upload(page, 'a.pdf', fixtures.p60); await stateIs(page, 'chosen');
     await page.route('**/js/worker.js*', async route => { await new Promise(r => setTimeout(r, 1500)); await route.continue(); });
