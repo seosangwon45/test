@@ -42,7 +42,7 @@ const BUILD_ERRORS = {
 };
 
 function jobName() { return state.mode === 'nup' ? `nup${state.per}` : `repeat${state.per}`; }
-function titleText() { return state.mode === 'nup' ? `${state.per}쪽 모아찍기` : '같은 쪽 반복 배치'; }
+function titleText() { return state.mode === 'nup' ? `${state.per}쪽 모아찍기` : '같은 쪽 여러 개 찍기'; }
 function leadText() {
   if (state.mode === 'repeat') return `한 쪽을 A4 한 장에 ${state.per}개씩 똑같이 넣습니다. 전단·쿠폰·안내문을 잘라 쓰기 좋아요.`;
   return state.per === 2 ? 'A4 한 장에 2쪽씩 나란히 넣습니다. 종이가 절반으로 줄어요.' : 'A4 한 장에 4쪽씩 넣습니다. 종이가 4분의 1로 줄어요.';
@@ -119,7 +119,7 @@ function applyMode() {
   document.title = `${titleText()} · 모두카피 PDF 도구`;
   $('per-legend').textContent = state.mode === 'nup' ? '한 면에 넣을 쪽 수' : '한 장에 넣을 개수';
   $('gap-legend').textContent = state.mode === 'nup' ? '쪽 사이 간격' : '사이 간격';
-  $('make').textContent = state.mode === 'nup' ? '모아찍기 PDF 만들기' : '반복 배치 PDF 만들기';
+  $('make').textContent = state.mode === 'nup' ? '모아찍기 PDF 만들기' : '여러 개 찍기 PDF 만들기';
   const two = state.per === 2;
   $('lab-landscape').textContent = two ? '좌우로 나란히' : 'A4 가로';
   $('lab-portrait').textContent = two ? '위아래로' : 'A4 세로';
@@ -295,7 +295,7 @@ function drawSheet(canvas, sheet, options, chips) {
     if (options.border) { g.strokeStyle = '#59606B'; g.lineWidth = Math.max(1, ratio); g.strokeRect(x + .5, y + .5, w - 1, h - 1); }
     else if (!thumb) { g.strokeStyle = '#C3CCD8'; g.lineWidth = 1; g.strokeRect(x + .5, y + .5, w - 1, h - 1); }
     if (chips) {
-      const r = Math.max(9 * ratio, Math.min(w, h) * .08), cx = x + r + 4 * ratio, cy = y + r + 4 * ratio;
+      const r = Math.min(canvas.width * .058, Math.min(w, h) * .22), cx = x + r * 1.35, cy = y + r * 1.35;
       g.fillStyle = 'rgba(24,35,54,.88)'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
       g.fillStyle = '#fff'; g.font = `700 ${Math.round(r * 1.05)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.fillText(String(cell.src + 1), cx, cy + r * .06);
@@ -336,7 +336,7 @@ function refreshPreview() {
   // 결과
   const after = $('after'); after.replaceChildren();
   const sheetsShown = Math.min(plan.sheets.length, OUT_SHEETS), allLandscape = plan.sheets.slice(0, sheetsShown).every(s => s.landscape);
-  after.className = 'sheets' + (allLandscape ? '' : ' tall');
+  after.className = 'sheets' + (allLandscape ? '' : ' tall') + (sheetsShown === 1 ? ' solo' : '');
   for (let s = 0; s < sheetsShown; s++) {
     const sheet = plan.sheets[s], canvas = document.createElement('canvas');
     drawSheet(canvas, sheet, plan.options, state.mode === 'nup');
@@ -387,7 +387,7 @@ async function make() {
   if (!state.file || body.dataset.state !== 'chosen') return;
   const token = ++state.token, { resolved, totalSheets } = computePlan(), file = state.file, mode = state.mode, per = state.per;
   clearResult(); $('make-error').hidden = true;
-  $('proc-title').textContent = mode === 'nup' ? '모아찍기 PDF를 만들고 있어요' : '반복 배치 PDF를 만들고 있어요';
+  $('proc-title').textContent = mode === 'nup' ? '모아찍기 PDF를 만들고 있어요' : '여러 개 찍기 PDF를 만들고 있어요';
   setProgress(3, '파일을 읽고 있어요 · 창을 닫지 말고 잠시만 기다려 주세요.');
   setState('processing', 'proc-title'); window.scrollTo(0, 0);
   const fail = code => {
@@ -428,7 +428,7 @@ async function make() {
 async function showDone(blob, token) {
   const r = state.result, allSame = r.landscape.every(v => v === r.landscape[0]);
   const dir = allSame ? (r.landscape[0] ? 'A4 가로' : 'A4 세로') : 'A4';
-  $('dnh').textContent = r.mode === 'nup' ? '모아찍기 PDF가 완성됐어요' : '반복 배치 PDF가 완성됐어요';
+  $('dnh').textContent = r.mode === 'nup' ? '모아찍기 PDF가 완성됐어요' : '여러 개 찍기 PDF가 완성됐어요';
   $('dn-sub').textContent = r.mode === 'nup' ? `원본 ${r.sourcePages}쪽이 A4 ${r.sheets}면으로 줄었습니다.` : `원본 ${r.sourcePages}쪽을 A4 한 면에 ${r.per}개씩 넣어 ${r.sheets}면을 만들었습니다.`;
   $('dn-name').textContent = r.name;
   $('dn-meta').textContent = `${dir} · ${r.sheets}면 · ${formatBytes(r.size)}`;
@@ -439,7 +439,7 @@ async function showDone(blob, token) {
   // 완성된 PDF 를 다시 열어 실제 모습을 보여 준다(미리보기 계획이 아니라 결과 파일 그대로).
   const box = $('result'); box.replaceChildren();
   const shown = Math.min(r.sheets, OUT_SHEETS), firstLandscape = r.landscape.slice(0, shown).every(Boolean);
-  box.className = 'sheets' + (firstLandscape ? ' wide' : '');
+  box.className = 'sheets' + (firstLandscape ? ' wide' : '') + (shown === 1 ? ' solo' : '');
   $('result-more').hidden = r.sheets <= shown; $('result-more').textContent = r.sheets > shown ? `외 ${r.sheets - shown}면` : '';
   let verify = null;
   try {

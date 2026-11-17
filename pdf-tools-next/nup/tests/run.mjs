@@ -45,7 +45,8 @@ function placed(p, c, slot, rtl) {
 }
 
 const { server, base } = await listen(0);
-const browser = await chromium.launch();
+// 컨테이너에 UTF-8 로캘이 없으면 Chromium 이 한글 파일명을 'download' 로 바꾼다. 일반 PC 와 같게 UTF-8 로캘로 띄운다.
+const browser = await chromium.launch({ env: { ...process.env, LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8' } });
 const fixtures = await buildFixtures();
 const consoleProblems = [];
 
@@ -191,7 +192,7 @@ const CASES = [
     await page.goto(base); await upload(page, 'a.pdf', fixtures.a4p8); await stateIs(page, 'chosen');
     await page.click('.mode[data-mode=repeat]'); await page.check('input[name=per][value="4"]', { force: true });
     const info = await page.evaluate(() => ({ url: location.search, title: document.getElementById('title').textContent, sum: document.getElementById('sum').textContent }));
-    assert(info.url === '?job=repeat4' && info.title === '같은 쪽 반복 배치' && info.sum.includes('A4 8면'), JSON.stringify(info)); return info.url + ' · ' + info.sum; });
+    assert(info.url === '?job=repeat4' && info.title === '같은 쪽 여러 개 찍기' && info.sum.includes('A4 8면'), JSON.stringify(info)); return info.url + ' · ' + info.sum; });
   await check('옵션', '미리보기가 옵션 변경 즉시 바뀜(용지 방향)', async () => {
     await page.goto(`${base}?job=nup2`); await upload(page, 'a.pdf', fixtures.a4p8); await stateIs(page, 'chosen');
     const dims = () => page.evaluate(() => { const c = document.querySelector('#after canvas'); return [c.width, c.height, document.getElementById('out-count').textContent]; });
@@ -224,7 +225,7 @@ const CASES = [
 
   // ───────── 4. 딥링크 ─────────
   for (const [job, title, mode, per, btn] of [['nup2', '2쪽 모아찍기', 'nup', '2', '모아찍기 PDF 만들기'], ['nup4', '4쪽 모아찍기', 'nup', '4', '모아찍기 PDF 만들기'],
-    ['repeat2', '같은 쪽 반복 배치', 'repeat', '2', '반복 배치 PDF 만들기'], ['repeat4', '같은 쪽 반복 배치', 'repeat', '4', '반복 배치 PDF 만들기']]) {
+    ['repeat2', '같은 쪽 여러 개 찍기', 'repeat', '2', '여러 개 찍기 PDF 만들기'], ['repeat4', '같은 쪽 여러 개 찍기', 'repeat', '4', '여러 개 찍기 PDF 만들기']]) {
     await check('딥링크', `?job=${job}`, async () => {
       await page.goto(`${base}?job=${job}`);
       const t = await page.evaluate(() => ({ title: document.getElementById('title').textContent, mode: document.body.dataset.mode, per: document.querySelector('input[name=per]:checked').value,
@@ -253,7 +254,7 @@ const CASES = [
       return { print: a('#order-print'), book: a('#order-book'), tabs: [...document.querySelectorAll('.tabs a')].map(e => e.getAttribute('href')), logo: document.querySelector('.hd-logo').getAttribute('href'),
         order: document.querySelector('.hd .btn').getAttribute('href'), how: document.querySelector('.how').textContent, mock: !!document.querySelector('.mock-note') }; });
     assert(t.print[0] === 'https://moducopy.co.kr/shop/item.php?it_id=1441618748' && t.print[1] === '_blank' && t.book[0] === 'https://moducopy.co.kr/shop/item.php?it_id=1437511967' && t.book[1] === '_blank'
-      && t.tabs.join() === '/pdf-tools/start/,/pdf-tools/basic/,/pdf-tools/converter/,/pdf-tools/print/' && t.logo === '/shop/' && t.order === '/shop/' && t.how.includes('①') && t.how.includes('②') && !t.mock, JSON.stringify(t));
+      && t.tabs.join() === '/pdf-tools/start/,/pdf-tools/start/#edit,/pdf-tools/start/#convert,/pdf-tools/start/#print' && t.logo === '/shop/' && t.order === '/shop/' && t.how.includes('①') && t.how.includes('②') && !t.mock, JSON.stringify(t));
     return '칼라·흑백 출력 / 책 만들기 새 탭, 탭 4개, 로고·주문 → /shop/'; });
   await check('완료 화면', '옵션 바꿔 다시 만들기 → 4쪽으로 재생성', async () => {
     await page.click('#again'); await stateIs(page, 'chosen');
@@ -310,7 +311,7 @@ for (const width of [1280, 390]) {
     const r = await page.evaluate(() => [document.getElementById('dl').getBoundingClientRect().bottom, document.getElementById('order-print').getBoundingClientRect().bottom, window.innerHeight].map(Math.round));
     assert(r[0] <= r[2], JSON.stringify(r)); return `받기 ${r[0]}px, 주문 ${r[1]}px / ${r[2]}px`; });
   await page.goto(`${base}?job=repeat4`); await upload(page, '할인쿠폰.pdf', fixtures.one); await stateIs(page, 'chosen'); await page.waitForTimeout(1000);
-  await shot('chosen-repeat4'); await audit('파일 선택됨(반복 배치 4개)');
+  await shot('chosen-repeat4'); await audit('파일 선택됨(여러 개 찍기 4개)');
   await page.click('#make'); await stateIs(page, 'done'); await page.waitForTimeout(300); await shot('done-repeat4');
   await page.goto(`${base}?job=nup4`); await upload(page, '발표자료.pdf', fixtures.a4l3); await stateIs(page, 'chosen'); await page.waitForTimeout(1000); await shot('chosen-nup4-landscape');
   await page.goto(`${base}?job=nup2`); await upload(page, '계약서_최종.pdf', fixtures.encUser); await stateIs(page, 'error'); await shot('error'); await audit('오류');
