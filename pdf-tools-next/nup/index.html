@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2쪽 모아찍기 · 모두카피 PDF 도구</title>
+<meta name="description" content="PDF 여러 쪽을 A4 한 장에 2쪽·4쪽씩 모아찍거나, 같은 쪽을 여러 개 반복 배치합니다. 파일을 서버로 보내지 않고 브라우저 안에서 처리합니다.">
+<link rel="canonical" href="https://moducopy.co.kr/pdf-tools/nup/">
+<link rel="stylesheet" href="nup.css?v=20261117a">
+<script src="js/layout.js?v=20261117a" defer></script>
+<script type="module" src="js/app.js?v=20261117a"></script>
+</head>
+<body data-state="empty" data-mode="nup">
+<div class="stripe"></div>
+<header class="hd"><div class="wrap hd-in">
+  <a class="hd-logo" href="/shop/" aria-label="모두카피 쇼핑몰 홈"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 344 100" role="img" aria-label="모두카피"><clipPath id="mclogo"><circle cx="50" cy="50" r="48"/></clipPath><circle cx="50" cy="50" r="48" fill="#b5122e"/><g clip-path="url(#mclogo)" fill="none" stroke="#fff" stroke-width="13.5" stroke-linejoin="round" stroke-linecap="round"><path d="M21 88 L27 38 L50 77 L73 38 L79 88"/></g><circle cx="38.5" cy="24.5" r="8" fill="#fff"/><circle cx="61.5" cy="24.5" r="8" fill="#fff"/><path d="M170.0703125 71.15234375H119.634765625V64.794921875H140.88671875V53.533203125H124.962890625V26.529296875H164.439453125V53.533203125H148.576171875V64.794921875H170.0703125ZM132.591796875 47.478515625H156.810546875V32.705078125H132.591796875Z M219.83015625000002 48.14453125H181.74617187500002V25.37890625H219.28523437500002V31.5546875H189.67781250000002V42.08984375H219.83015625000002ZM225.76375000000002 59.830078125H204.20906250000002V77.509765625H196.58015625000002V59.830078125H175.32820312500002V53.71484375H225.76375000000002Z M235.13882812500003 69.21484375 230.90054687500003 63.40234375Q237.68179687500003 60.0419921875 241.99576171875003 56.15185546875Q246.30972656250003 52.26171875 248.70132812500003 47.599609375L232.41421875000003 49.11328125L231.44546875000003 42.513671875L251.03238281250003 41.3330078125Q251.91031250000003 37.7607421875 252.18277343750003 33.916015625H234.35171875000003V27.740234375H259.90250000000003Q259.87222656250003 37.0947265625 257.85904296875003 44.390625Q255.84585937500003 51.6865234375 250.42691406250003 57.9833984375Q245.00796875000003 64.2802734375 235.13882812500003 69.21484375ZM274.61539062500003 43.603515625H282.42593750000003V49.9609375H274.61539062500003V77.44921875H266.86539062500003V22.47265625H274.61539062500003Z M333.21507812500005 77.5703125H325.40453125000005V22.47265625H333.21507812500005ZM319.47093750000005 33.734375H314.56664062500005V57.6806640625Q317.86644531250005 57.4384765625 321.71117187500005 56.984375L322.07445312500005 62.736328125Q314.26390625000005 64.0380859375 305.96898437500005 64.44677734375Q297.67406250000005 64.85546875 287.50218750000005 64.916015625L286.77562500000005 58.619140625L293.13304687500005 58.55859375V33.734375H288.28929687500005V27.55859375H319.47093750000005ZM307.05882812500005 58.1650390625V33.734375H300.64085937500005V58.4072265625Z" fill="#182336"/></svg><span>PDF 도구</span></a>
+  <nav class="tabs" aria-label="PDF 도구 메뉴">
+    <a href="/pdf-tools/start/">전체 도구</a><a href="/pdf-tools/basic/">편집</a><a href="/pdf-tools/converter/">변환</a><a href="/pdf-tools/print/" aria-current="page">인쇄 준비</a>
+  </nav>
+  <a class="btn btn-primary" href="/shop/"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>주문하러 가기</a>
+</div></header>
+
+<main class="wrap">
+  <a class="back" href="/pdf-tools/start/"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>전체 도구</a>
+  <div class="th"><span class="th-ic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="1.5"/><path d="M12 5.5v13M5.5 9.5h3.5M5.5 12.5h3.5M15 9.5h3.5M15 12.5h3.5"/></svg></span><div><h1 id="title" tabindex="-1">2쪽 모아찍기</h1><p id="lead">A4 한 장에 2쪽씩 나란히 넣습니다. 종이가 절반으로 줄어요.</p></div></div>
+
+  <div class="modes" role="group" aria-label="만들 방식">
+    <button type="button" class="mode" data-mode="nup" aria-pressed="true"><strong>여러 쪽 모아찍기</strong><span>1·2·3·4쪽을 한 장에</span></button>
+    <button type="button" class="mode" data-mode="repeat" aria-pressed="false"><strong>같은 쪽 반복 배치</strong><span>한 쪽을 한 장에 여러 개</span></button>
+  </div>
+
+  <ol class="steps" aria-label="진행 단계"><li data-step="1"><b>1</b>파일 선택</li><li data-step="2"><b>2</b>옵션 확인</li><li data-step="3"><b>3</b>받기 · 주문</li></ol>
+
+  <section class="drop" id="drop" aria-label="파일 선택">
+    <div class="demo" id="demo" aria-hidden="true"></div>
+    <div class="errbox" id="errbox" role="alert"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 10v5M12 17.5v.5"/></svg><div><strong id="err-title"></strong><span id="err-detail"></span></div></div>
+    <button type="button" class="btn btn-primary btn-lg" id="pick"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v4h4"/></svg><span id="pick-label">PDF 파일 선택</span></button>
+    <input type="file" id="file" class="sr" accept=".pdf,application/pdf" tabindex="-1" aria-hidden="true">
+    <p class="or">또는 파일을 여기에 끌어다 놓으세요</p>
+    <p class="lim">PDF 1개 · 200MB 이하 권장</p>
+    <p class="opening" id="opening" role="status" aria-live="polite" hidden>파일을 여는 중이에요…</p>
+  </section>
+  <p class="trust"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6z"/><path d="m9 12 2.2 2.2L15 10.5"/></svg><span>파일을 서버로 보내지 않습니다. 이 브라우저 안에서만 처리해요.</span></p>
+
+  <div class="card fbar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v4h4"/></svg><div><strong id="f-name"></strong><small id="f-meta"></small></div><button type="button" class="btn btn-line" id="change">파일 바꾸기</button></div>
+  <p class="warnbox" id="warn" role="status" hidden></p>
+
+  <div class="grid" data-show="chosen">
+    <section class="card pv" aria-labelledby="pvh">
+      <h2 id="pvh">이렇게 인쇄됩니다</h2>
+      <div class="pv-row">
+        <div class="pv-col"><h3>원본 <b id="src-count"></b></h3><div class="pages" id="before"></div><p class="morec" id="before-more" hidden></p></div>
+        <div class="pv-arrow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <div class="pv-col"><h3>결과 <b id="out-count"></b></h3><div class="sheets" id="after"></div><p class="morec" id="after-more" hidden></p></div>
+      </div>
+      <p class="pv-sum" id="sum" role="status" aria-live="polite"></p>
+      <p class="pv-note" id="pv-note"></p>
+    </section>
+    <section class="card op" aria-labelledby="oph">
+      <h2 id="oph">옵션</h2>
+      <fieldset><legend id="per-legend">한 면에 넣을 쪽 수</legend><div class="seg" id="per-seg"></div></fieldset>
+      <fieldset><legend>쪽 놓는 방식</legend><div class="seg">
+        <label class="opt"><input type="radio" name="sheet" value="auto" checked><span>자동<br>(가장 크게)</span></label>
+        <label class="opt"><input type="radio" name="sheet" value="landscape"><span id="lab-landscape">좌우로<br>나란히</span></label>
+        <label class="opt"><input type="radio" name="sheet" value="portrait"><span id="lab-portrait">위아래로</span></label></div></fieldset>
+      <fieldset data-only="nup" id="order-field"><legend>읽는 순서</legend><div class="seg">
+        <label class="opt"><input type="radio" name="order" value="ltr" checked><span>왼쪽 → 오른쪽</span></label>
+        <label class="opt"><input type="radio" name="order" value="rtl"><span>오른쪽 → 왼쪽</span></label></div>
+        <p class="fixed" id="order-note" hidden>위아래로 놓을 때는 위에서 아래 순서입니다.</p></fieldset>
+      <fieldset><legend id="gap-legend">쪽 사이 간격</legend><div class="seg">
+        <label class="opt"><input type="radio" name="gap" value="none" checked><span>없음</span></label>
+        <label class="opt"><input type="radio" name="gap" value="narrow"><span>좁게</span></label>
+        <label class="opt"><input type="radio" name="gap" value="wide"><span>넓게</span></label></div></fieldset>
+      <label class="chk" data-only="nup"><input type="checkbox" id="border"><span>쪽마다 테두리 선 넣기</span></label>
+      <label class="chk" data-only="repeat"><input type="checkbox" id="guides" checked><span>자르는 선 표시하기</span></label>
+      <p class="fixed">용지는 A4로 만들어집니다. 원고 방향에 맞춰 가장 크게 놓습니다.</p>
+      <p class="errline" id="make-error" role="alert" hidden></p>
+      <div class="act"><button type="button" class="btn btn-primary btn-lg btn-block" id="make">모아찍기 PDF 만들기</button><small id="make-sum"></small></div>
+    </section>
+  </div>
+
+  <section class="card proc" data-show="processing" aria-live="polite">
+    <h2 id="proc-title" tabindex="-1">PDF를 만들고 있어요</h2><p id="proc-text">창을 닫지 말고 잠시만 기다려 주세요.</p>
+    <div class="bar" id="bar" role="progressbar" aria-label="진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="prog"></i></div>
+    <button type="button" class="btn btn-line" id="cancel">취소</button>
+  </section>
+
+  <div class="done" data-show="done">
+    <div class="dn-h" role="status"><i><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i><div><h2 id="dnh" tabindex="-1">모아찍기 PDF가 완성됐어요</h2><p id="dn-sub"></p></div></div>
+    <section class="card dn-main" aria-labelledby="dnh">
+      <div class="dn-file"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v4h4"/></svg><div><strong id="dn-name"></strong><small id="dn-meta"></small></div></div>
+      <div class="sheets" id="result"></div><p class="morec" id="result-more" hidden></p>
+      <p class="dn-check"><strong>인쇄 전 확인</strong> · 받은 PDF를 열어 쪽 순서와 글자가 원본과 같은지 봐 주세요. 인쇄할 때는 ‘실제 크기(100%)’로 인쇄하세요.</p>
+      <div class="cont">이어서 하기 <a href="/pdf-tools/print/">쪽 번호 넣기</a><a href="/pdf-tools/basic/">다른 PDF와 합치기</a></div>
+    </section>
+    <aside class="dn-side">
+      <div class="card dn-get"><a class="btn btn-navy btn-lg btn-block" href="#" id="dl"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>PDF 받기</a><small id="dl-note">이 화면을 닫기 전까지 몇 번이든 다시 받을 수 있어요.</small></div>
+      <div class="card order">
+        <h3>이대로 인쇄까지 맡기시겠어요?</h3><p>모두카피에서 출력해 보내 드립니다.</p>
+        <div class="spec" id="spec"></div>
+        <a class="btn btn-primary btn-lg btn-block" id="order-print" href="https://moducopy.co.kr/shop/item.php?it_id=1441618748" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>이 파일로 인쇄 주문하기</a>
+        <a class="btn btn-line btn-block order-book" id="order-book" href="https://moducopy.co.kr/shop/item.php?it_id=1437511967" target="_blank" rel="noopener">책으로 만들기 주문</a>
+        <ol class="how"><li><b>①</b>위에서 PDF를 받습니다.</li><li><b>②</b>새 탭으로 열리는 주문서의 파일 첨부에 받은 PDF를 올립니다.</li></ol>
+        <p class="hownote">파일은 주문서로 자동 전달되지 않습니다. 받은 PDF를 직접 첨부해 주세요.</p>
+      </div>
+      <div class="more"><button type="button" class="btn btn-line" id="again">옵션 바꿔 다시 만들기</button><button type="button" class="btn btn-line" id="restart">다른 파일로 시작</button></div>
+    </aside>
+  </div>
+
+  <div class="info infowrap">
+    <details><summary>사용 방법</summary><div class="body"><ol><li>PDF 파일을 선택하거나 끌어다 놓습니다.</li><li>‘여러 쪽 모아찍기’ 또는 ‘같은 쪽 반복 배치’를 고르고, 미리보기에서 인쇄될 모습을 확인합니다.</li><li>‘PDF 만들기’를 누른 뒤 ‘PDF 받기’로 저장합니다.</li><li>인쇄할 때는 프린터 설정에서 ‘실제 크기(100%)’, ‘한 면에 1쪽’을 선택하세요. 모아찍기를 한 번 더 고르면 두 번 줄어듭니다.</li></ol></div></details>
+    <details><summary>결과 확인과 책임 안내</summary><div class="body"><p>무료로 제공하는 보조 도구입니다. 받은 PDF의 모든 쪽을 원본과 비교해 확인한 뒤 사용·인쇄해 주세요. 원본 파일과 이미 접수된 주문 원고는 바뀌지 않습니다.</p><p>링크·책갈피와 입력 양식의 입력 기능은 결과에 남지 않습니다(보이는 내용은 그대로 인쇄됩니다). 색상 변환이나 재단 여백(도련) 만들기는 하지 않습니다.</p><p><a href="/pdf-tools/basic/#free-use-notice">책임 제한 안내 전문 보기</a></p></div></details>
+    <details><summary>내 파일은 어떻게 처리되나요?</summary><div class="body"><p>이 도구는 이 브라우저 안에서만 파일을 처리하며 서버로 보내지 않습니다. 결과에 원본 파일을 함께 담지 않습니다. 창을 닫거나 ‘다른 파일로 시작’을 누르면 작업 내용이 사라집니다.</p><p><a href="/pdf-tools/file-privacy.php">파일 처리·개인정보 안내</a></p></div></details>
+  </div>
+</main>
+
+<footer class="ft"><div class="wrap ft-in">
+  <div><strong>모두카피</strong> · 평일 상담 09:00~18:00 · 02) 302-7797</div>
+  <nav aria-label="안내"><a href="/pdf-tools/file-privacy.php">파일 처리·개인정보 안내</a><a href="vendor/LICENSES/README.txt">오픈소스 고지</a></nav>
+</div></footer>
+</body>
+</html>
